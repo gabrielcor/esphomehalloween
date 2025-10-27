@@ -1,0 +1,147 @@
+esphome:
+  name: brmesh-controller-ble
+  friendly_name: brmesh-controller-ble
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+    
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "FC/MV+IfpBAkh2qsY+fpyKu4OdAsK9vE1IlmsESfOys="
+
+ota:
+  - platform: esphome
+    password: "55d4a4fe3a059886b15228c88066e478"
+
+wifi:
+  ssid: blackcrow_01
+  password: "8001017170"
+  manual_ip:
+    gateway: 192.168.50.1
+    static_ip: 192.168.50.41
+    subnet: 255.255.255.0
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Brmesh-Controller-Ble"
+    password: "mnqkD31R0q9P"
+
+captive_portal:
+
+web_server:
+  port: 80
+    
+esp32_ble_tracker:
+esp32_ble_server:
+
+# Source configuration
+external_components:
+  - source: github://dennispg/esphome-fastcon@main
+
+# deep_sleep:
+#   run_duration: 0s
+#   sleep_duration: 0s
+# Controller configuration
+fastcon:
+  mesh_key: "46648939"    # Your mesh key in hex format
+# recommended online (don't work)
+#   adv_duration: 15
+#  adv_gap: 2
+#  adv_interval_min: 0x06
+#  adv_interval_max: 0x08
+#  max_queue_size: 16
+
+  adv_duration: 30
+  adv_gap: 2
+  adv_interval_min: 0x20
+  adv_interval_max: 0x40
+  max_queue_size: 100
+
+  # Optional parameters to control the advertisdement protocol with their defaults:
+  # original parameters
+  # adv_interval_min: 0x20  # Minimum advertisement interval
+  # adv_interval_max: 0x40  # Maximum advertisement interval
+  # adv_duration: 50        # Advertisement duration in milliseconds
+  # adv_gap: 10             # Gap between advertisements in milliseconds
+  # max_queue_size: 100     # Maximum number of queued commands
+
+
+switch:
+  - platform: template
+    id: run_color_cycle
+    name: "Run Color Cycle"
+    optimistic: true       # lets the UI toggle immediately
+    restore_mode: RESTORE_DEFAULT_OFF
+    turn_on_action: []
+    turn_off_action: []
+
+# Light configuration (add an entry for each light)
+light:
+  - platform: fastcon
+    id: ble_light_01
+    name: "Ble Light 01"
+    light_id: 1           # ID of the light (1-255)
+  - platform: fastcon
+    id: ble_light_02
+    name: "Ble Light 02"
+    light_id: 2           # ID of the light (1-255)    
+  - platform: fastcon
+    id: ble_light_03
+    name: "Ble Light 03"
+    light_id: 3           # ID of the light (1-255)    
+  - platform: fastcon
+    id: ble_light_04
+    name: "Ble Light 04"
+    light_id: 4           # ID of the light (1-255)            
+  - platform: fastcon
+    id: ble_light_05
+    name: "Ble Light 05"
+    light_id: 5           # ID of the light (1-255)        
+  - platform: fastcon
+    id: ble_light_06
+    name: "Ble Light 06"
+    light_id: 6           # ID of the light (1-255)        
+
+
+globals:
+  - id: color_idx
+    type: int
+    restore_value: no
+    initial_value: '0'
+
+interval:
+  - interval: 3s
+    then:
+      - if:
+          condition:
+            switch.is_on: run_color_cycle
+          then:      
+            - lambda: |-
+                // RGB: primaries + intersections (R,G,B,Y,C,M,White)
+                const float COLORS[][3] = {
+                  {1.0f, 0.0f, 0.0f}, // Red
+                  {0.0f, 1.0f, 0.0f}, // Green
+                  {0.0f, 0.0f, 1.0f}, // Blue
+                  {1.0f, 1.0f, 0.0f}, // Yellow (R+G)
+                  {0.0f, 1.0f, 1.0f}, // Cyan   (G+B)
+                  {1.0f, 0.0f, 1.0f}, // Magenta(R+B)
+                  {1.0f, 1.0f, 1.0f}  // White  (R+G+B)
+                };
+
+                auto rgb = COLORS[id(color_idx)];
+                // List all Fastcon lights explicitly:
+                id(ble_light_01).turn_on().set_rgb(rgb[0], rgb[1], rgb[2]).perform();
+                id(ble_light_02).turn_on().set_rgb(rgb[0], rgb[1], rgb[2]).perform();
+                id(ble_light_03).turn_on().set_rgb(rgb[0], rgb[1], rgb[2]).perform();
+                id(ble_light_04).turn_on().set_rgb(rgb[0], rgb[1], rgb[2]).perform();
+                id(ble_light_05).turn_on().set_rgb(rgb[0], rgb[1], rgb[2]).perform();
+                id(ble_light_06).turn_on().set_rgb(rgb[0], rgb[1], rgb[2]).perform();
+
+                id(color_idx) = (id(color_idx) + 1) % 7;
