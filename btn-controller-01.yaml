@@ -1,0 +1,76 @@
+esphome:
+  name: btn-controller-01
+  friendly_name: btn-controller-01
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "sqJ+ZpThaWFEYp0vKZOMsL/7j28JsWPSqgeGzHvrFXs="
+
+ota:
+  - platform: esphome
+    password: "6299b89c9cfd06eb7438cf344b66f357"
+
+wifi:
+  ssid: blackcrow_01
+  password: "8001017170"
+  manual_ip:
+    gateway: 192.168.50.1
+    static_ip: 192.168.50.43
+    subnet: 255.255.255.0  
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Btn-Controller-01"
+    password: "mGDuRqkGFi6l"
+
+captive_portal:
+    
+binary_sensor:
+  - platform: gpio
+    name: "Button GPIO27"
+    pin:
+      number: GPIO27
+      mode: INPUT_PULLUP
+      inverted: true
+    filters:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+
+  - platform: gpio
+    name: "Button GPIO25"
+    pin:
+      number: GPIO25
+      mode: INPUT_PULLUP
+      inverted: true
+    filters:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+
+  - platform: gpio
+    name: "Button GPIO33"
+    pin:
+      number: GPIO33
+      mode: INPUT_PULLUP
+      inverted: true
+    filters:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+
+  - platform: gpio
+    name: "Button GPIO32"
+    pin:
+      number: GPIO32
+      mode: INPUT_PULLUP
+      inverted: true
+    filters:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
