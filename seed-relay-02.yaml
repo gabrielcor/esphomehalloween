@@ -97,7 +97,7 @@ switch:
   - platform: output
     name: "Relay 4"
     output: relay4
-    restore_mode: ALWAYS_ON
+#    restore_mode: ALWAYS_ON
   - platform: output
     name: "Relay 5"
     output: relay5
